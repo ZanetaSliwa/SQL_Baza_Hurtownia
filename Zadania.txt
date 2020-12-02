@@ -1,0 +1,46 @@
+Zadania
+
+a.
+
+SELECT IDProduktu, Nazwa, CenaNetto, PodatekVAT, Opis, CAST(CenaNetto*(1+PodatekVAT) AS NUMERIC(12,2)) AS CenaBrutto FROM Produkt;
+
+b.
+
+SELECT Zamowienie.IDKlienta, CAST(((CenaNetto*(1+PodatekVAT))*Ilosc)-(((CenaNetto*(1+PodatekVAT))*Ilosc)*Rabat.Nazwa) AS NUMERIC(12,2)) AS CenaBruttoZRabatem 
+FROM Produkt INNER JOIN SzczegolyZamowienia ON Produkt.IDProduktu=SzczegolyZamowienia.IDProduktu 
+INNER JOIN Zamowienie ON SzczegolyZamowienia.IDZamowienia=Zamowienie.IDZamowienia 
+INNER JOIN Klient ON Zamowienie.IDKlienta=Klient.IDKlienta 
+INNER JOIN Rabat ON Klient.IDRabat=Rabat.IDRabatu 
+ORDER BY IDKlienta;
+
+c.
+
+SELECT Nazwa, CenaNetto, CAST(CenaNetto-(CenaNetto*0.1) AS NUMERIC(12,2)) As CenaNettoPoObnizce
+FROM Produkt
+WHERE Nazwa LIKE '%sukienka%';
+
+d.
+
+SELECT Klient.IDKlienta, NIP, Produkt.Nazwa AS NazwaProduktu, (CenaNetto*(1+PodatekVAT)) AS CenaBrutto, Ilosc, (CenaNetto*(1+PodatekVAT))*Ilosc AS KwotaDoZaplaty, DataZamowienia
+FROM Klient INNER JOIN Zamowienie ON Klient.IDKlienta=Zamowienie.IDKlienta
+INNER JOIN SzczegolyZamowienia ON Zamowienie.IDZamowienia=SzczegolyZamowienia.IDZamowienia
+INNER JOIN Produkt ON SzczegolyZamowienia.IDProduktu=Produkt.IDProduktu
+WHERE DataZamowienia = ALL (SELECT CAST(CAST(GETDATE() AS DATE) AS NVARCHAR) FROM Zamowienie);
+
+e.
+
+SELECT Klient.IDKlienta, NIP, CAST(SUM((CenaNetto*(1+PodatekVAT))*Ilosc) AS NUMERIC(12,2)) AS KwotaDoZaplaty
+FROM Klient INNER JOIN Zamowienie ON Klient.IDKlienta=Zamowienie.IDKlienta
+INNER JOIN SzczegolyZamowienia ON Zamowienie.IDZamowienia=SzczegolyZamowienia.IDZamowienia
+INNER JOIN Produkt ON SzczegolyZamowienia.IDProduktu=Produkt.IDProduktu
+WHERE (DataZamowienia BETWEEN CAST(DATEADD(MM, -12, GETDATE()) AS DATE) AND CAST(GETDATE() AS DATE) AND (CenaNetto*(1+PodatekVAT))*Ilosc >= 2000 )
+GROUP BY Klient.IDKlienta, NIP
+ORDER BY Klient.IDKlienta;
+
+f.
+
+SELECT Zamowienie.IDKlienta
+FROM Zamowienie
+WHERE Zamowienie.Oplacono = 0
+ORDER BY Zamowienie.IDKlienta;
+

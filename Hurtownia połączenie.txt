@@ -1,0 +1,2 @@
+Baza danych Hurtownia
+SQL Server Connection properties - Authentication: User Name (AzureAD\ŻanetaŚliwa)
